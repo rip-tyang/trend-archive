@@ -1,0 +1,4 @@
+name: bilibili-trend
+dependencies:
+  - python=3.9
+  - requests
