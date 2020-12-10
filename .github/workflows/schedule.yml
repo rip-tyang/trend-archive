@@ -29,7 +29,7 @@ jobs:
         run: |
           git config --local user.email "jscnm1993+github_auto@gmail.com"
           git config --local user.name "Auto Commit"
-          git remote set-url origin https://${{ github.actor }}:${{ secretes.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git remote set-url origin https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
           git pull --rebase
 
       - name: Run archive
