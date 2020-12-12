@@ -34,6 +34,7 @@ jobs:
       - name: Install dependencies
         run: |
           conda env update --file environment.yml --name test
+          conda activate test
 
       - name: Setup git config
         run: |
