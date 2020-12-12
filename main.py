@@ -1,11 +1,15 @@
+from typing import List
+
 import json
+from time import sleep
 from datetime import date
-from os import path, makedirs
+from os import path
 
 from api import BilibiliApi
-from writer import write_md, write_raw_videos
+from writer import write_md, write_raw_data
 
 BASE_PATH = './archive'
+NAP_TIME = .5
 
 def generate_md(raw_data: BilibiliApi.RAW_DATA_T) -> str:
     res = []
@@ -17,24 +21,42 @@ def generate_md(raw_data: BilibiliApi.RAW_DATA_T) -> str:
     return '\n'.join(res)
 
 
+def summarize_tags(api: BilibiliApi, loc: str, name: str, aids: List[str]) -> BilibiliApi.RAW_DATA_T:
+    all_tags = {}
+    for aid in aids:
+        sleep(NAP_TIME)
+        tag_list = api.get_tag(aid)
+        for tag in tag_list:
+            if tag['tag_id'] in all_tags:
+                all_tags[tag['tag_id']]['day_count'] += 1
+            else:
+                all_tags[tag['tag_id']] = {'data': tag, 'day_count': 1}
+    write_raw_data(all_tags, path.join(loc, 'Tags', name))
+
+
 def summarize_highest_ranked(api: BilibiliApi, loc: str) -> BilibiliApi.RAW_DATA_T:
     highest_ranked = api.get_highest_ranked()
-    write_raw_videos(highest_ranked, path.join(loc, 'highest_ranked_raw.json'))
+    write_raw_data(highest_ranked, path.join(loc, 'Raw', 'highest_ranked.json'))
+
+    aids = [video['aid'] for video in highest_ranked]
+    summarize_tags(api, loc, 'highest_ranked.json', aids)
 
     return highest_ranked
 
 
 def summarize_most_popular(api: BilibiliApi, loc: str) -> BilibiliApi.RAW_DATA_T:
     most_popular = api.get_most_popular()
-    write_raw_videos(most_popular, path.join(loc, 'most_popular'))
+    write_raw_data(most_popular, path.join(loc, 'Raw', 'most_popular.json'))
+
+    aids = (video['aid'] for video in most_popular)
+    summarize_tags(api, loc, 'most_popular.json', aids)
 
     return most_popular
 
 
 def summarize_today():
     date_str = date.today().isoformat()
-    loc = path.join(BASE_PATH, date_str)
-    makedirs(loc, exist_ok=True)
+    loc = path.join(BASE_PATH, 'Bilibili', date_str)
 
     api = BilibiliApi()
     highest_ranked = summarize_highest_ranked(api, loc)

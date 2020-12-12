@@ -10,22 +10,34 @@ class BilibiliApi(object):
     @classmethod
     def get_highest_ranked(cls) -> RAW_DATA_T:
         url = f'{cls.BASE_URL}/x/web-interface/ranking'
-        return cls._get_video_list(url)
+        return cls._get_data_list(url)
 
     @classmethod
     def get_most_popular(cls) -> RAW_DATA_T:
         url = f'{cls.BASE_URL}/x/web-interface/popular'
-        return cls._get_video_list(url)
+        return cls._get_data_list(url)
 
     @classmethod
-    def _get_video_list(cls, url: str) -> RAW_DATA_T:
+    def get_tag(cls, aid) -> RAW_DATA_T:
+        url = f'{cls.BASE_URL}/x/tag/archive/tags?aid={aid}'
+        return cls._get_data(url)
+
+    @classmethod
+    def _get_data(cls, url: str) -> RAW_DATA_T:
         json_data = cls._get(url)
-        raw_videos = json_data['data']['list']
-        return raw_videos
+        raw_data_list = json_data['data']
+        return raw_data_list
+
+    @classmethod
+    def _get_data_list(cls, url: str) -> RAW_DATA_T:
+        json_data = cls._get(url)
+        raw_data_list = json_data['data']['list']
+        return raw_data_list
 
     @classmethod
     def _get(cls, url: str) -> Dict[str, Any]:
         res = requests.get(url)
+        print(f'getting {url}')
         if res.status_code != 200:
             raise ValueError('Status code: {res.status_code}\n Content: {res.text}')
         return json.loads(res.text)
