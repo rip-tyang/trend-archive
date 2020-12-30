@@ -35,7 +35,8 @@ jobs:
 
       - name: Run archive
         run: |
-          python main.py
+          python save_raw.py
+          python write_md.py
 
       - name: Checkout
         run: |

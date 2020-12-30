@@ -21,6 +21,10 @@ def generate_md(raw_data: BilibiliApi.RAW_DATA_T) -> str:
     return '\n'.join(res)
 
 
+def generate_md_table_row(row: List[Any]) -> str:
+    return f'| {" | ".join(r for r in row)} |\n'
+
+
 def summarize_tags(api: BilibiliApi, loc: str, name: str, aids: List[str]) -> BilibiliApi.RAW_DATA_T:
     all_tags = {}
     for aid in aids:
@@ -31,8 +35,24 @@ def summarize_tags(api: BilibiliApi, loc: str, name: str, aids: List[str]) -> Bi
                 all_tags[tag['tag_id']]['day_count'] += 1
             else:
                 all_tags[tag['tag_id']] = {'data': tag, 'day_count': 1}
-    write_raw_data(all_tags, path.join(loc, 'Tags', name))
+    write_raw_data(all_tags, path.join(loc, 'Tags', 'README.md'))
 
+    summary = []
+    for _, tag in all_tags.items():
+        name = tag['data']['tag_name']
+        count = tag['day_count']
+        summary.append((name, count))
+
+    sort(summary, key=lambda x: x[1], acending=False)
+
+
+    summary_header = ['Tag', 'Count']
+    summary_md = '# Tag Distribution\n'
+    summary_md += generate_md_table_row(summary_header)
+    summary_md += generate_md_table_row(['---'] * len(summary_header))
+    for row in summary:
+        summary_md += generate_md_table_row(row)
+    write_md(summary_md, path.join(loc, 'Tags', name))
 
 def summarize_highest_ranked(api: BilibiliApi, loc: str) -> BilibiliApi.RAW_DATA_T:
     highest_ranked = api.get_highest_ranked()
