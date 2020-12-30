@@ -28,7 +28,7 @@ def generate_tag_distribution(raw_tags: BilibiliApi.RAW_DATA_T) -> str:
         count = str(tag['day_count'])
         summary.append((name, count))
 
-    summary.sort(key=lambda x: x[1], reverse=True)
+    summary.sort(key=lambda x: int(x[1]), reverse=True)
 
     summary_header = ['Tag', 'Count']
     summary_md = ''
