@@ -39,5 +39,5 @@ class BilibiliApi(object):
         res = requests.get(url)
         print(f'getting {url}')
         if res.status_code != 200:
-            raise ValueError('Status code: {res.status_code}\n Content: {res.text}')
+            raise ValueError(f'Status code: {res.status_code}\n Content: {res.text}')
         return json.loads(res.text)
