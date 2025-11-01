@@ -246,6 +246,66 @@ class GithubAPI(BaseApi):
         write_raw_data(trending_repos, path.join(loc, 'trending.json'))
         cls._write_md_for_date(loc, trending_repos)
 
+class YahooFinanceAPI(BaseApi):
+    LOC = 'Stock'
+    BASE_URL = 'https://finance.yahoo.com'
+    MOST_ACTIVE_PATH = 'markets/stocks/most-active/?start=0&count=200'
+    RAW_DATA_T = List[Dict[str, Any]]
+
+    @classmethod
+    def get_trending(cls) -> RAW_DATA_T:
+        soup = cls._get_parsed_html(f"{cls.BASE_URL}/{cls.MOST_ACTIVE_PATH}")
+        data_table = soup.find('div', class_='table-container').find('table').find('tbody').find_all('tr')
+        most_active = []
+        for row in data_table:
+            ticker = row.find('td', attrs={'data-testid-cell': 'ticker'}).text.strip()
+            company = row.find('td', attrs={'data-testid-cell': 'companyshortname.raw'}).text.strip()
+            intradayprice = row.find('td', attrs={'data-testid-cell': 'intradayprice'}).find('fin-streamer', attrs={'data-test': 'change'}).text.strip()
+            intradaypricechange = row.find('td', attrs={'data-testid-cell': 'intradaypricechange'}).text.strip()
+            percentchange = row.find('td', attrs={'data-testid-cell': 'percentchange'}).text.strip()
+            dayvolume = row.find('td', attrs={'data-testid-cell': 'dayvolume'}).text.strip()
+            avgdailyvol3m = row.find('td', attrs={'data-testid-cell': 'avgdailyvol3m'}).text.strip()
+            intradaymarketcap = row.find('td', attrs={'data-testid-cell': 'intradaymarketcap'}).text.strip()
+            peratio = row.find('td', attrs={'data-testid-cell': 'peratio.lasttwelvemonths'}).text.strip()
+            year_range = row.find('td', attrs={'data-testid-cell': 'fiftyTwoWeekRange'}).find('div', class_='labels').find_all('span')
+            year_range_low = year_range[0].text.strip()
+            year_range_high = year_range[1].text.strip()
+
+            most_active.append({
+                'ticker': ticker,
+                'company': company,
+                'intradayprice': intradayprice,
+                'intradaypricechange': intradaypricechange,
+                'percentchange': percentchange,
+                'dayvolume': dayvolume,
+                'avgdailyvol3m': avgdailyvol3m,
+                'intradaymarketcap': intradaymarketcap,
+                'peratio': peratio,
+                'year_range_low': year_range_low,
+                'year_range_high': year_range_high,
+            })
+        return most_active
+
+    @classmethod
+    def _write_md_for_date(
+        cls, 
+        loc: str, 
+        trending_repos: RAW_DATA_T, 
+    ) -> None:
+        md_str = '# Most Active\n'
+        md_str += '| Symbol Name | Company | Price | Change | Change % | Volume | Avg Vol (3M) | Market Cap | P/E Ratio (TTM) |  52 Wk Low | 52 Wk High |\n'
+        md_str += '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n'
+        for repo in trending_repos:
+            md_str += f'| {repo["ticker"]} | {repo["company"]} | {repo["intradayprice"]} | {repo["intradaypricechange"]} | {repo["percentchange"]} | {repo["dayvolume"]} | {repo["avgdailyvol3m"]} | {repo["intradaymarketcap"]} | {repo["peratio"]} | {repo["year_range_low"]} | {repo["year_range_high"]} |\n'
+
+        write_md(md_str, path.join(loc, 'README.md'))
+
+    @classmethod
+    def archive_for_today(cls) -> None:
+        loc = path.join(cls.BASE_PATH, cls.LOC, date.today().isoformat())
+        trending_repos = cls.get_trending()
+        write_raw_data(trending_repos, path.join(loc, 'trending.json'))
+        cls._write_md_for_date(loc, trending_repos)
+
 if __name__ == '__main__':
-    result = GithubAPI.get_trending()
-    print(result[0])
+    YahooFinanceAPI.archive_for_today()
