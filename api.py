@@ -309,3 +309,4 @@ class YahooFinanceAPI(BaseApi):
 
 if __name__ == '__main__':
     YahooFinanceAPI.archive_for_today()
+    BilibiliApi.archive_for_today()
