@@ -348,7 +348,7 @@ class HuggingFaceAPI(BaseApi):
             viewer = len(texts) > 3
             item = {
                 'title': title,
-                'last_modified': texts[-4] if viewer else texts[-3],
+                'last_modified': texts[1] if viewer else texts[0],
                 'views': texts[-3] if viewer else '',
                 'download': texts[-2],
                 'like': texts[-1],
