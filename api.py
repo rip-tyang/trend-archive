@@ -206,7 +206,6 @@ class GithubAPI(BaseApi):
             for contributor_tag in contributors_tag:
                 img_tag = contributor_tag.find('img')
                 name = img_tag['alt'].lstrip('@')
-                url = f"{cls.BASE_URL}/{name}"
                 avatar = img_tag['src']
                 contributors.append({
                     'name': name,
