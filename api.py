@@ -320,7 +320,7 @@ class HuggingFaceAPI(BaseApi):
         trending = []
         for article in articles:
             title = article.find('header').text.strip()
-            desc = article.find('div').find('div')
+            desc = article.find('div').find('div', class_='items-center')
             texts = [t.replace('\n', '').replace('\t', '').strip() for t in desc.text.split('•')]
             has_inference = '' in texts
             texts = [t for t in texts if t != '']
