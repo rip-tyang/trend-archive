@@ -9,43 +9,46 @@ import json
 import re
 
 from writer import write_raw_data, write_md
+from reader import read_json
+
+BASE_REQUEST_HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Accept-Encoding': 'gzip, deflate',
+    'Accept-Language': 'en-US,en;q=0.9',
+    'Cache-Control': 'max-age=0',
+    'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+    'Sec-Ch-Ua-Mobile': '?0',
+    'Sec-Ch-Ua-Platform': '"macOS"',
+    'Sec-Fetch-Dest': 'document',
+    'Sec-Fetch-Mode': 'navigate',
+    'Sec-Fetch-Site': 'none',
+    'Sec-Fetch-User': '?1',
+    'Upgrade-Insecure-Requests': '1',
+}
 
 class BaseApi(object):
     BASE_PATH = './archive'
 
     @classmethod
-    def _get(cls, url: str) -> str:
-        res = requests.get(url, headers={
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept-Encoding': 'gzip, deflate',
-            'Accept-Language': 'en-US,en;q=0.9',
-            'Cache-Control': 'max-age=0',
-            'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
-            'Sec-Ch-Ua-Mobile': '?0',
-            'Sec-Ch-Ua-Platform': '"macOS"',
-            'Sec-Fetch-Dest': 'document',
-            'Sec-Fetch-Mode': 'navigate',
-            'Sec-Fetch-Site': 'none',
-            'Sec-Fetch-User': '?1',
-            'Upgrade-Insecure-Requests': '1',
-        })
+    def _get(cls, url: str, session: requests.Session = None) -> str:
+        res = session.get(url) if session else requests.get(url, headers=BASE_REQUEST_HEADERS)
         print(f'getting {url}')
         if res.status_code != 200:
             raise ValueError(f'Status code: {res.status_code}\n Content: {res.text}')
         return res.text
 
     @classmethod
-    def _get_json(cls, url: str) -> Dict[str, Any]:
+    def _get_json(cls, url: str, session: requests.Session = None) -> Dict[str, Any]:
         try:
-            result = cls._get(url)
+            result = cls._get(url, session)
             return json.loads(result)
         except json.decoder.JSONDecodeError as e:
             print(e)
             print(result)
 
     @classmethod
-    def _get_parsed_html(cls, url: str) -> BeautifulSoup:
-        result = cls._get(url)
+    def _get_parsed_html(cls, url: str, session: requests.Session = None) -> BeautifulSoup:
+        result = cls._get(url, session)
         return BeautifulSoup(result, 'html.parser')
 
     @classmethod
@@ -247,64 +250,49 @@ class GithubAPI(BaseApi):
 
 class YahooFinanceAPI(BaseApi):
     LOC = 'Stock'
-    BASE_URL = 'https://finance.yahoo.com'
-    MOST_ACTIVE_PATH = 'markets/stocks/most-active/?start=0&count=200'
+    BASE_URL = 'https://query1.finance.yahoo.com/v1'
+    MOST_ACTIVE_PATH = 'finance/screener/predefined/saved?count=200&formatted=true&scrIds=MOST_ACTIVES&sortField=&sortType=&start=0&useRecordsResponse=true&fields=symbol%2CshortName&lang=en-US&region=US'
     RAW_DATA_T = List[Dict[str, Any]]
 
     @classmethod
     def get_trending(cls) -> RAW_DATA_T:
-        soup = cls._get_parsed_html(f"{cls.BASE_URL}/{cls.MOST_ACTIVE_PATH}")
-        data_table = soup.find('div', class_='table-container').find('table').find('tbody').find_all('tr')
-        most_active = []
-        for row in data_table:
-            ticker = row.find('td', attrs={'data-testid-cell': 'ticker'}).text.strip()
-            company = row.find('td', attrs={'data-testid-cell': 'companyshortname.raw'}).text.strip()
-            intradayprice = row.find('td', attrs={'data-testid-cell': 'intradayprice'}).find('fin-streamer', attrs={'data-test': 'change'}).text.strip()
-            intradaypricechange = row.find('td', attrs={'data-testid-cell': 'intradaypricechange'}).text.strip()
-            percentchange = row.find('td', attrs={'data-testid-cell': 'percentchange'}).text.strip()
-            dayvolume = row.find('td', attrs={'data-testid-cell': 'dayvolume'}).text.strip()
-            avgdailyvol3m = row.find('td', attrs={'data-testid-cell': 'avgdailyvol3m'}).text.strip()
-            intradaymarketcap = row.find('td', attrs={'data-testid-cell': 'intradaymarketcap'}).text.strip()
-            peratio = row.find('td', attrs={'data-testid-cell': 'peratio.lasttwelvemonths'}).text.strip()
-            year_range = row.find('td', attrs={'data-testid-cell': 'fiftyTwoWeekRange'}).find('div', class_='labels').find_all('span')
-            year_range_low = year_range[0].text.strip()
-            year_range_high = year_range[1].text.strip()
-
-            most_active.append({
-                'ticker': ticker,
-                'company': company,
-                'intradayprice': intradayprice,
-                'intradaypricechange': intradaypricechange,
-                'percentchange': percentchange,
-                'dayvolume': dayvolume,
-                'avgdailyvol3m': avgdailyvol3m,
-                'intradaymarketcap': intradaymarketcap,
-                'peratio': peratio,
-                'year_range_low': year_range_low,
-                'year_range_high': year_range_high,
-            })
-        return most_active
+        with requests.session() as session:
+            session.headers.update(BASE_REQUEST_HEADERS)
+            cls._get('https://finance.yahoo.com/markets/stocks/most-active/?start=0&count=200&guccounter=1', session)
+            return cls._get_json(f"{cls.BASE_URL}/{cls.MOST_ACTIVE_PATH}", session)['finance']['result'][0]['records']
 
     @classmethod
     def _write_md_for_date(
         cls, 
         loc: str, 
-        trending_repos: RAW_DATA_T, 
+        trending_stocks: RAW_DATA_T, 
     ) -> None:
         md_str = '# Most Active\n'
-        md_str += '| Symbol Name | Company | Price | Change | Change % | Volume | Avg Vol (3M) | Market Cap | P/E Ratio (TTM) |  52 Wk Low | 52 Wk High |\n'
-        md_str += '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n'
-        for repo in trending_repos:
-            md_str += f'| {repo["ticker"]} | {repo["company"]} | {repo["intradayprice"]} | {repo["intradaypricechange"]} | {repo["percentchange"]} | {repo["dayvolume"]} | {repo["avgdailyvol3m"]} | {repo["intradaymarketcap"]} | {repo["peratio"]} | {repo["year_range_low"]} | {repo["year_range_high"]} |\n'
+        md_str += '| Symbol Name | Company | Price | Change | Change % | Volume | Avg Vol (3M) | Market Cap | P/E Ratio (TTM) | 52 Wk Change |  52 Wk Low | 52 Wk High |\n'
+        md_str += '| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n'
+        for stock in trending_stocks:
+            ticker = stock['ticker']
+            company = stock['companyName']
+            intradayprice = stock['regularMarketPrice']['raw']
+            intradaypricechange = stock['regularMarketChange']['raw']
+            percentchange = stock['regularMarketChangePercent']['raw']
+            dayvolume = stock['regularMarketVolume']['raw']
+            avgdailyvol3m = stock['avgDailyVol3m']['raw']
+            intradaymarketcap = stock['marketCap']['raw']
+            peratio = stock['peRatioLtm']['raw'] if 'peRatioLtm' in stock else 'N/A'
+            year_change_precent = stock['fiftyTwoWeekChangePercent']['raw']
+            year_range_low = stock['fiftyTwoWeekLow']['raw']
+            year_range_high = stock['fiftyTwoWeekHigh']['raw']
+            md_str += f'| {ticker} | {company} | {intradayprice} | {intradaypricechange} | {percentchange}% | {dayvolume} | {avgdailyvol3m} | {intradaymarketcap} | {peratio} | {year_change_precent}% | {year_range_low} | {year_range_high} |\n'
 
         write_md(md_str, path.join(loc, 'README.md'))
 
     @classmethod
     def archive_for_today(cls) -> None:
         loc = path.join(cls.BASE_PATH, cls.LOC, date.today().isoformat())
-        trending_repos = cls.get_trending()
-        write_raw_data(trending_repos, path.join(loc, 'trending.json'))
-        cls._write_md_for_date(loc, trending_repos)
+        trending_stocks = cls.get_trending()
+        write_raw_data(trending_stocks, path.join(loc, 'trending.json'))
+        cls._write_md_for_date(loc, trending_stocks)
 
 class HuggingFaceAPI(BaseApi):
     LOC = 'HuggingFace'
@@ -388,4 +376,5 @@ class HuggingFaceAPI(BaseApi):
         cls._write_md_for_date(loc, trending_model, trending_dataset)
 
 if __name__ == '__main__':
-    HuggingFaceAPI.archive_for_today()
+    # HuggingFaceAPI.archive_for_today()
+    YahooFinanceAPI.archive_for_today()
