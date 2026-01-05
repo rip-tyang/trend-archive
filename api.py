@@ -256,10 +256,11 @@ class YahooFinanceAPI(BaseApi):
 
     @classmethod
     def get_trending(cls) -> RAW_DATA_T:
-        with requests.session() as session:
-            session.headers.update(BASE_REQUEST_HEADERS)
-            cls._get('https://finance.yahoo.com/markets/stocks/most-active/?start=0&count=200&guccounter=1', session)
-            return cls._get_json(f"{cls.BASE_URL}/{cls.MOST_ACTIVE_PATH}", session)['finance']['result'][0]['records']
+        return cls._get_json(f"{cls.BASE_URL}/{cls.MOST_ACTIVE_PATH}")['finance']['result'][0]['records']
+        # with requests.session() as session:
+        #     session.headers.update(BASE_REQUEST_HEADERS)
+        #     cls._get('https://finance.yahoo.com/markets/stocks/most-active/?start=0&count=200&guccounter=1', session)
+        #     return cls._get_json(f"{cls.BASE_URL}/{cls.MOST_ACTIVE_PATH}", session)['finance']['result'][0]['records']
 
     @classmethod
     def _write_md_for_date(
