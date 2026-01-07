@@ -12,13 +12,14 @@ from writer import write_raw_data, write_md
 from reader import read_json
 
 BASE_REQUEST_HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
     'Accept-Encoding': 'gzip, deflate',
     'Accept-Language': 'en-US,en;q=0.9',
     'Cache-Control': 'max-age=0',
-    'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+    'Sec-Ch-Ua': '"Google Chrome";v="143", "Chromium";v="143", "Not A(Brand";v="24"',
     'Sec-Ch-Ua-Mobile': '?0',
-    'Sec-Ch-Ua-Platform': '"macOS"',
+    'Sec-Ch-Ua-Platform': '"Windows"',
     'Sec-Fetch-Dest': 'document',
     'Sec-Fetch-Mode': 'navigate',
     'Sec-Fetch-Site': 'none',
@@ -250,17 +251,20 @@ class GithubAPI(BaseApi):
 
 class YahooFinanceAPI(BaseApi):
     LOC = 'Stock'
-    BASE_URL = 'https://query1.finance.yahoo.com/v1'
-    MOST_ACTIVE_PATH = 'finance/screener/predefined/saved?count=200&formatted=true&scrIds=MOST_ACTIVES&sortField=&sortType=&start=0&useRecordsResponse=true&fields=symbol%2CshortName&lang=en-US&region=US'
     RAW_DATA_T = List[Dict[str, Any]]
 
     @classmethod
     def get_trending(cls) -> RAW_DATA_T:
-        return cls._get_json(f"{cls.BASE_URL}/{cls.MOST_ACTIVE_PATH}")['finance']['result'][0]['records']
-        # with requests.session() as session:
-        #     session.headers.update(BASE_REQUEST_HEADERS)
-        #     cls._get('https://finance.yahoo.com/markets/stocks/most-active/?start=0&count=200&guccounter=1', session)
-        #     return cls._get_json(f"{cls.BASE_URL}/{cls.MOST_ACTIVE_PATH}", session)['finance']['result'][0]['records']
+        try: 
+            return cls._get_json('https://query1.finance.yahoo.com/v1/finance/screener/predefined/saved?count=200&formatted=true&scrIds=MOST_ACTIVES&sortField=&sortType=&start=0&useRecordsResponse=true&fields=symbol%2CshortName&lang=en-US&region=US')['finance']['result'][0]['records']
+        except ValueError as e:
+            print(f'{e}, Failed to get via API, try parsing HTML...')
+        soup = cls._get_parsed_html('https://finance.yahoo.com/markets/stocks/most-active/?start=0&count=200&guccounter=1')
+        script_tags = soup.find_all('script')
+        target_script = [script for script in script_tags if script.get('data-url') and 'MOST_ACTIVES' in script.get('data-url')]
+        if len(target_script) != 1:
+            raise ValueError('Cannot find target script')
+        return json.loads(json.loads(target_script[0].text)['body'])['finance']['result'][0]['records']
 
     @classmethod
     def _write_md_for_date(
