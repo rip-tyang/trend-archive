@@ -1,0 +1,12 @@
+# Trending
+| Repository | Description | Language | Stars | Forks |
+| --- | --- | --- | --- | --- |
+| [ruvnet/wifi-densepose](https://github.com//ruvnet/wifi-densepose) | WiFi DensePose turns commodity WiFi signals into real-time human pose estimation, vital sign monitoring, and presence detection — all without a single pixel of video. | Rust | 21,990 | 2,588 |
+| [moeru-ai/airi](https://github.com//moeru-ai/airi) | 💖🧸 Self hosted, you-owned Grok Companion, a container of souls of waifu, cyber livings to bring them into our worlds, wishing to achieve Neuro-sama's altitude. Capable of realtime voice chat, Minecraft, Factorio playing. Web / macOS / Windows supported. | TypeScript | 21,407 | 2,008 |
+| [anthropics/prompt-eng-interactive-tutorial](https://github.com//anthropics/prompt-eng-interactive-tutorial) | Anthropic's Interactive Prompt Engineering Tutorial | Jupyter Notebook | 31,596 | 3,214 |
+| [ruvnet/ruflo](https://github.com//ruvnet/ruflo) | 🌊 The leading agent orchestration platform for Claude. Deploy intelligent multi-agent swarms, coordinate autonomous workflows, and build conversational AI systems. Features enterprise-grade architecture, distributed swarm intelligence, RAG integration, and native Claude Code / Codex Integration | TypeScript | 18,065 | 2,004 |
+| [alibaba/OpenSandbox](https://github.com//alibaba/OpenSandbox) | OpenSandbox is a general-purpose sandbox platform for AI applications, offering multi-language SDKs, unified sandbox APIs, and Docker/Kubernetes runtimes for scenarios like Coding Agents, GUI Agents, Agent Evaluation, AI Code Execution, and RL Training. | Python | 4,323 | 304 |
+| [microsoft/markitdown](https://github.com//microsoft/markitdown) | Python tool for converting files and office documents to Markdown. | Python | 89,613 | 5,251 |
+| [K-Dense-AI/claude-scientific-skills](https://github.com//K-Dense-AI/claude-scientific-skills) | A set of ready to use Agent Skills for research, science, engineering, analysis, finance and writing. | Python | 11,083 | 1,256 |
+| [superset-sh/superset](https://github.com//superset-sh/superset) | IDE for the AI Agents Era - Run an army of Claude Code, Codex, etc. on your machine | TypeScript | 3,518 | 237 |
+| [servo/servo](https://github.com//servo/servo) | Servo aims to empower developers with a lightweight, high-performance alternative for embedding web technologies in applications. | Rust | 35,755 | 3,497 |
