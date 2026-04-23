@@ -1,0 +1,15 @@
+# Trending
+| Repository | Description | Language | Stars | Forks |
+| --- | --- | --- | --- | --- |
+| [zilliztech/claude-context](https://github.com//zilliztech/claude-context) | Code search MCP for Claude Code. Make entire codebase the context for any coding agent. | TypeScript | 7,557 | 624 |
+| [Fincept-Corporation/FinceptTerminal](https://github.com//Fincept-Corporation/FinceptTerminal) | FinceptTerminal is a modern finance application offering advanced market analytics, investment research, and economic data tools, designed for interactive exploration and data-driven decision-making in a user-friendly environment. | Python | 13,132 | 1,719 |
+| [koala73/worldmonitor](https://github.com//koala73/worldmonitor) | Real-time global intelligence dashboard. AI-powered news aggregation, geopolitical monitoring, and infrastructure tracking in a unified situational awareness interface | TypeScript | 51,604 | 8,303 |
+| [langfuse/langfuse](https://github.com//langfuse/langfuse) | 🪢 Open source LLM engineering platform: LLM Observability, metrics, evals, prompt management, playground, datasets. Integrates with OpenTelemetry, Langchain, OpenAI SDK, LiteLLM, and more. 🍊YC W23 | TypeScript | 25,633 | 2,596 |
+| [KeygraphHQ/shannon](https://github.com//KeygraphHQ/shannon) | Shannon Lite is an autonomous, white-box AI pentester for web applications and APIs. It analyzes your source code, identifies attack vectors, and executes real exploits to prove vulnerabilities before they reach production. | TypeScript | 39,600 | 4,365 |
+| [open-metadata/OpenMetadata](https://github.com//open-metadata/OpenMetadata) | OpenMetadata is a unified metadata platform for data discovery, data observability, and data governance powered by a central metadata repository, in-depth column level lineage, and seamless team collaboration. | TypeScript | 12,197 | 1,991 |
+| [ruvnet/RuView](https://github.com//ruvnet/RuView) | π RuView: WiFi DensePose turns commodity WiFi signals into real-time human pose estimation, vital sign monitoring, and presence detection — all without a single pixel of video. | Rust | 49,383 | 6,554 |
+| [HKUDS/RAG-Anything](https://github.com//HKUDS/RAG-Anything) | "RAG-Anything: All-in-One RAG Framework" | Python | 17,560 | 2,060 |
+| [sansan0/TrendRadar](https://github.com//sansan0/TrendRadar) | ⭐AI-driven public opinion & trend monitor with multi-platform aggregation, RSS, and smart alerts.🎯 告别信息过载，你的 AI 舆情监控助手与热点筛选工具！聚合多平台热点 + RSS 订阅，支持关键词精准筛选。AI 智能筛选新闻 + AI 翻译 + AI 分析简报直推手机，也支持接入 MCP 架构，赋能 AI 自然语言对话分析、情感洞察与趋势预测等。支持 Docker ，数据本地/云端自持。集成微信/飞书/钉钉/Telegram/邮件/ntfy/bark/slack 等渠道智能推送。 | Python | 54,465 | 23,657 |
+| [AIDC-AI/Pixelle-Video](https://github.com//AIDC-AI/Pixelle-Video) | 🚀 AI 全自动短视频引擎 | AI Fully Automated Short Video Engine | Python | 5,598 | 897 |
+| [Z4nzu/hackingtool](https://github.com//Z4nzu/hackingtool) | ALL IN ONE Hacking Tool For Hackers | Python | 59,703 | 6,718 |
+| [vercel-labs/skills](https://github.com//vercel-labs/skills) | The open agent skills tool - npx skills | TypeScript | 15,499 | 1,272 |
