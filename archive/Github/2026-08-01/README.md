@@ -1,0 +1,18 @@
+# Trending
+| Repository | Description | Language | Stars | Forks |
+| --- | --- | --- | --- | --- |
+| [microsoft/AI-For-Beginners](https://github.com//microsoft/AI-For-Beginners) | 12 Weeks, 24 Lessons, AI for All! | Jupyter Notebook | 57,283 | 11,347 |
+| [paperswithbacktest/awesome-systematic-trading](https://github.com//paperswithbacktest/awesome-systematic-trading) | A curated list of awesome libraries, packages, strategies, books, blogs, tutorials for systematic trading. | Python | 12,253 | 1,514 |
+| [usekaneo/kaneo](https://github.com//usekaneo/kaneo) | 🎯 All you need. Nothing you don't. Open source project management that works for you, not against you. | TypeScript | 5,701 | 485 |
+| [zhaoxuya520/reverse-skill](https://github.com//zhaoxuya520/reverse-skill) | Reverse Engineering / Authorized Penetration Testing / Security Research Skill Router Pack AI-powered routing + On-demand toolchain bootstrapping + Self-evolving knowledge base Supports Claude Code, Kiro, Cursor, Cline, and other AI coding clients 逆向/渗透/安全技能路由包 - AI 自动路由 + 按需自举工具链 + 自动进化经验库 | 支持 Claude Code / Kiro / Cursor / Cline 等代码 AI 客户端 | PowerShell | 11,939 | 1,809 |
+| [microsoft/generative-ai-for-beginners](https://github.com//microsoft/generative-ai-for-beginners) | 21 Lessons, Get Started Building with Generative AI | Jupyter Notebook | 114,223 | 61,222 |
+| [github/copilot-sdk](https://github.com//github/copilot-sdk) | Multi-platform SDK for integrating GitHub Copilot Agent into apps and services | Java | 10,281 | 1,387 |
+| [github/gh-stack](https://github.com//github/gh-stack) | GitHub Stacked PRs | Go | 822 | 37 |
+| [huggingface/speech-to-speech](https://github.com//huggingface/speech-to-speech) | Build local voice agents with open-source models | Python | 10,222 | 1,249 |
+| [abus-aikorea/voice-pro](https://github.com//abus-aikorea/voice-pro) | Gradio WebUI for creators and developers, featuring key TTS (Edge-TTS, kokoro) and zero-shot Voice Cloning (E2 & F5-TTS, CosyVoice), with Whisper audio processing, YouTube download, Demucs vocal isolation, and multilingual translation. | Python | 11,763 | 1,721 |
+| [iv-org/invidious](https://github.com//iv-org/invidious) | Invidious is an alternative front-end to YouTube | Crystal | 21,627 | 2,431 |
+| [ansible/ansible](https://github.com//ansible/ansible) | Ansible is a radically simple IT automation platform that makes your applications and systems easier to deploy and maintain. Automate everything from code deployment to network configuration to cloud management, in a language that approaches plain English, using SSH, with no agents to install on remote systems. https://docs.ansible.com. | Python | 70,102 | 24,271 |
+| [microsoft/TRELLIS.2](https://github.com//microsoft/TRELLIS.2) | Native and Compact Structured Latents for 3D Generation | Python | 9,938 | 1,200 |
+| [TencentCloud/TencentDB-Agent-Memory](https://github.com//TencentCloud/TencentDB-Agent-Memory) | TencentDB Agent Memory is a team-level memory hub for AI Agents — turning conversations, docs, and code into four reusable memory assets (Chat Memory, Skill, LLM-Wiki, Code-Graph) that are governed, shared, and equipped across agents and frameworks. | TypeScript | 10,306 | 990 |
+| [NomaDamas/k-skill](https://github.com//NomaDamas/k-skill) | 한국인을 위한 스킬 모음집 - 에이전트를 한국인으로 | JavaScript | 6,739 | 795 |
+| [bytedance/deer-flow](https://github.com//bytedance/deer-flow) | An open-source long-horizon SuperAgent harness that researches, codes, and creates. With the help of sandboxes, memories, tools, skill, subagents and message gateway, it handles different levels of tasks that could take minutes to hours. | Python | 78,740 | 10,743 |
