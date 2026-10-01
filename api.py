@@ -282,12 +282,12 @@ class YahooFinanceAPI(BaseApi):
             intradaypricechange = stock['regularMarketChange']['raw']
             percentchange = stock['regularMarketChangePercent']['raw']
             dayvolume = stock['regularMarketVolume']['raw']
-            avgdailyvol3m = stock['avgDailyVol3m']['raw']
+            avgdailyvol3m = stock.get('avgDailyVol3m', {}).get('raw', 'N/A')
             intradaymarketcap = stock['marketCap']['raw']
-            peratio = stock['peRatioLtm']['raw'] if 'peRatioLtm' in stock else 'N/A'
-            year_change_precent = stock['fiftyTwoWeekChangePercent']['raw']
-            year_range_low = stock['fiftyTwoWeekLow']['raw']
-            year_range_high = stock['fiftyTwoWeekHigh']['raw']
+            peratio = stock.get('peRatioLtm', {}).get('raw', 'N/A')
+            year_change_precent = stock.get('fiftyTwoWeekChangePercent', {}).get('raw', 'N/A')
+            year_range_low = stock.get('fiftyTwoWeekLow', {}).get('raw', 'N/A')
+            year_range_high = stock.get('fiftyTwoWeekHigh', {}).get('raw', 'N/A')
             md_str += f'| {ticker} | {company} | {intradayprice} | {intradaypricechange} | {percentchange}% | {dayvolume} | {avgdailyvol3m} | {intradaymarketcap} | {peratio} | {year_change_precent}% | {year_range_low} | {year_range_high} |\n'
 
         write_md(md_str, path.join(loc, 'README.md'))
