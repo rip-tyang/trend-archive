@@ -1,8 +1,8 @@
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional, Union
 
 from bs4 import BeautifulSoup
 from os import path
-from datetime import date
+from datetime import date, datetime
 from time import sleep
 import requests
 import json
@@ -29,6 +29,47 @@ BASE_REQUEST_HEADERS = {
 
 class BaseApi(object):
     BASE_PATH = './archive'
+    LOC = ''
+    EXPECTED_FILES: List[str] = []
+
+    @classmethod
+    def format_date(cls, target_date: Union[date, datetime, str, None] = None) -> str:
+        if target_date is None:
+            return date.today().isoformat()
+        if isinstance(target_date, (date, datetime)):
+            return target_date.strftime('%Y-%m-%d')
+        return str(target_date)
+
+    @classmethod
+    def get_archive_dir(cls, target_date: Union[date, datetime, str, None] = None) -> str:
+        date_str = cls.format_date(target_date)
+        return path.join(cls.BASE_PATH, cls.LOC, date_str)
+
+    @classmethod
+    def has_data(cls, target_date: Union[date, datetime, str, None] = None) -> bool:
+        loc = cls.get_archive_dir(target_date)
+        if not path.exists(loc):
+            return False
+        if cls.EXPECTED_FILES:
+            return all(path.exists(path.join(loc, f)) for f in cls.EXPECTED_FILES)
+        return path.exists(path.join(loc, 'README.md'))
+
+    @classmethod
+    def archive_for_date(cls, target_date: Union[date, datetime, str, None] = None, force: bool = False) -> None:
+        date_str = cls.format_date(target_date)
+        loc = cls.get_archive_dir(target_date)
+        if not force and cls.has_data(target_date):
+            print(f'[{cls.LOC}] Data already exists for {date_str}, skipping fetch.')
+            return
+        cls._archive_for_date(loc)
+
+    @classmethod
+    def _archive_for_date(cls, loc: str) -> None:
+        raise NotImplementedError
+
+    @classmethod
+    def archive_for_today(cls, force: bool = False) -> None:
+        cls.archive_for_date(date.today(), force=force)
 
     @classmethod
     def _get(cls, url: str, session: requests.Session = None) -> str:
@@ -40,26 +81,30 @@ class BaseApi(object):
 
     @classmethod
     def _get_json(cls, url: str, session: requests.Session = None) -> Dict[str, Any]:
+        result = cls._get(url, session)
         try:
-            result = cls._get(url, session)
             return json.loads(result)
         except json.decoder.JSONDecodeError as e:
-            print(e)
-            print(result)
+            print(f"Failed to decode JSON from {url}: {e}\nResponse: {result[:500]}", file=sys.stderr)
+            raise
 
     @classmethod
     def _get_parsed_html(cls, url: str, session: requests.Session = None) -> BeautifulSoup:
         result = cls._get(url, session)
         return BeautifulSoup(result, 'html.parser')
 
-    @classmethod
-    def archive_for_today(cls) -> None:
-        raise NotImplementedError
 class BilibiliApi(BaseApi):
     LOC = 'Bilibili'
     NAP_TIME = .5
     BASE_URL = 'https://api.bilibili.com'
     RAW_DATA_T = List[Dict[str, Any]]
+    EXPECTED_FILES = [
+        path.join('Raw', 'most_popular.json'),
+        path.join('Tags', 'most_popular.json'),
+        path.join('Raw', 'highest_ranked.json'),
+        path.join('Tags', 'highest_ranked.json'),
+        'README.md',
+    ]
 
     @classmethod
     def _get_highest_ranked(cls) -> RAW_DATA_T:
@@ -89,7 +134,7 @@ class BilibiliApi(BaseApi):
         return raw_data_list
 
     @classmethod
-    def _get_tags(cls, aids: List[str]) -> None:
+    def _get_tags(cls, aids: List[str]) -> Dict[str, Any]:
         all_tags = {}
         for aid in aids:
             sleep(cls.NAP_TIME)
@@ -162,17 +207,17 @@ class BilibiliApi(BaseApi):
         write_md(md_str, path.join(loc, 'README.md'))
 
     @classmethod
-    def archive_for_today(cls) -> None:
-        loc = path.join(cls.BASE_PATH, cls.LOC, date.today().isoformat())
+    def _archive_for_date(cls, loc: str) -> None:
         most_popular_data = cls._get_most_popular()
-        most_popular_aids = (video['aid'] for video in most_popular_data)
+        most_popular_aids = [video['aid'] for video in most_popular_data]
         most_popular_tags = cls._get_tags(most_popular_aids)
-        write_raw_data(most_popular_data, path.join(loc, 'Raw', 'most_popular.json'))
-        write_raw_data(most_popular_tags, path.join(loc, 'Tags', 'most_popular.json'))
 
         highest_ranked_data = cls._get_highest_ranked()
-        highest_ranked_aids = (video['aid'] for video in highest_ranked_data)
+        highest_ranked_aids = [video['aid'] for video in highest_ranked_data]
         highest_ranked_tags = cls._get_tags(highest_ranked_aids)
+
+        write_raw_data(most_popular_data, path.join(loc, 'Raw', 'most_popular.json'))
+        write_raw_data(most_popular_tags, path.join(loc, 'Tags', 'most_popular.json'))
         write_raw_data(highest_ranked_data, path.join(loc, 'Raw', 'highest_ranked.json'))
         write_raw_data(highest_ranked_tags, path.join(loc, 'Tags', 'highest_ranked.json'))
 
@@ -182,6 +227,10 @@ class GithubAPI(BaseApi):
     LOC = 'Github'
     BASE_URL = 'https://github.com'
     RAW_DATA_T = List[Dict[str, Any]]
+    EXPECTED_FILES = [
+        'trending.json',
+        'README.md',
+    ]
 
     @classmethod
     def get_trending(cls) -> RAW_DATA_T:
@@ -243,8 +292,7 @@ class GithubAPI(BaseApi):
         write_md(md_str, path.join(loc, 'README.md'))
 
     @classmethod
-    def archive_for_today(cls) -> None:
-        loc = path.join(cls.BASE_PATH, cls.LOC, date.today().isoformat())
+    def _archive_for_date(cls, loc: str) -> None:
         trending_repos = cls.get_trending()
         write_raw_data(trending_repos, path.join(loc, 'trending.json'))
         cls._write_md_for_date(loc, trending_repos)
@@ -252,6 +300,10 @@ class GithubAPI(BaseApi):
 class YahooFinanceAPI(BaseApi):
     LOC = 'Stock'
     RAW_DATA_T = List[Dict[str, Any]]
+    EXPECTED_FILES = [
+        'trending.json',
+        'README.md',
+    ]
 
     @classmethod
     def get_trending(cls) -> RAW_DATA_T:
@@ -293,8 +345,7 @@ class YahooFinanceAPI(BaseApi):
         write_md(md_str, path.join(loc, 'README.md'))
 
     @classmethod
-    def archive_for_today(cls) -> None:
-        loc = path.join(cls.BASE_PATH, cls.LOC, date.today().isoformat())
+    def _archive_for_date(cls, loc: str) -> None:
         trending_stocks = cls.get_trending()
         write_raw_data(trending_stocks, path.join(loc, 'trending.json'))
         cls._write_md_for_date(loc, trending_stocks)
@@ -305,6 +356,11 @@ class HuggingFaceAPI(BaseApi):
     MOST_TRENDING_MODEL = 'models?sort=trending'
     MOST_TRENDING_DATASET = 'datasets?sort=trending'
     RAW_DATA_T = List[Dict[str, Any]]
+    EXPECTED_FILES = [
+        'trending_model.json',
+        'trending_dataset.json',
+        'README.md',
+    ]
 
     @classmethod
     def get_trending_model(cls) -> RAW_DATA_T:
@@ -372,8 +428,7 @@ class HuggingFaceAPI(BaseApi):
         write_md(md_str, path.join(loc, 'README.md'))
 
     @classmethod
-    def archive_for_today(cls) -> None:
-        loc = path.join(cls.BASE_PATH, cls.LOC, date.today().isoformat())
+    def _archive_for_date(cls, loc: str) -> None:
         trending_model = cls.get_trending_model()
         trending_dataset = cls.get_trending_dataset()
         write_raw_data(trending_model, path.join(loc, 'trending_model.json'))

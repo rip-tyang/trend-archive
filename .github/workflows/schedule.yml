@@ -9,6 +9,9 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: write
+
     env:
       TZ: America/New_York
 
@@ -38,8 +41,13 @@ jobs:
         run: |
           python save_raw.py
 
-      - name: Checkout
+      - name: Commit and push changes
+        if: always()
         run: |
           git add .
-          git commit -m "Auto commit from Github Action"
-          git push
+          if ! git diff --staged --quiet; then
+            git commit -m "Auto commit from Github Action"
+            git push
+          else
+            echo "No changes to commit"
+          fi
