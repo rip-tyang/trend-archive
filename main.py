@@ -5,7 +5,7 @@ from time import sleep
 from datetime import date
 from os import path
 
-from api import BilibiliApi
+from apis import BilibiliApi
 from writer import write_md, write_raw_data
 
 BASE_PATH = './archive'

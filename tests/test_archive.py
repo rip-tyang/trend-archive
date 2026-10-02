@@ -4,8 +4,18 @@ import unittest
 from datetime import date, datetime
 from unittest.mock import MagicMock, patch
 
-from api import BaseApi, BilibiliApi, GithubAPI, YahooFinanceAPI, HuggingFaceAPI
+from apis import BaseApi, BilibiliApi, GithubAPI, YahooFinanceAPI, HuggingFaceAPI
+import api as legacy_api
 import save_raw
+
+
+class TestBackwardCompatibility(unittest.TestCase):
+    def test_legacy_api_module_exports(self):
+        self.assertIs(legacy_api.BaseApi, BaseApi)
+        self.assertIs(legacy_api.BilibiliApi, BilibiliApi)
+        self.assertIs(legacy_api.GithubAPI, GithubAPI)
+        self.assertIs(legacy_api.YahooFinanceAPI, YahooFinanceAPI)
+        self.assertIs(legacy_api.HuggingFaceAPI, HuggingFaceAPI)
 
 
 class TestDateFormatting(unittest.TestCase):
@@ -46,7 +56,7 @@ class TestIdempotency(unittest.TestCase):
             LOC = "Dummy"
             EXPECTED_FILES = ["a.json", "b.json", "README.md"]
 
-        with patch("api.path.exists") as mock_exists:
+        with patch("apis.base.path.exists") as mock_exists:
             # Case 1: directory doesn't exist
             mock_exists.return_value = False
             self.assertFalse(DummyApi.has_data("2026-01-01"))
