@@ -68,16 +68,19 @@ class BaseApi(object):
         cls.archive_for_date(date.today(), force=force)
 
     @classmethod
-    def _get(cls, url: str, session: requests.Session = None) -> str:
-        res = session.get(url) if session else requests.get(url, headers=BASE_REQUEST_HEADERS)
+    def _get(cls, url: str, session: requests.Session = None, headers: Optional[Dict[str, str]] = None) -> str:
+        req_headers = dict(BASE_REQUEST_HEADERS)
+        if headers:
+            req_headers.update(headers)
+        res = session.get(url, headers=req_headers) if session else requests.get(url, headers=req_headers)
         print(f'getting {url}')
         if res.status_code != 200:
             raise ValueError(f'Status code: {res.status_code}\n Content: {res.text}')
         return res.text
 
     @classmethod
-    def _get_json(cls, url: str, session: requests.Session = None) -> Dict[str, Any]:
-        result = cls._get(url, session)
+    def _get_json(cls, url: str, session: requests.Session = None, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:
+        result = cls._get(url, session, headers=headers)
         try:
             return json.loads(result)
         except json.decoder.JSONDecodeError as e:
@@ -85,6 +88,6 @@ class BaseApi(object):
             raise
 
     @classmethod
-    def _get_parsed_html(cls, url: str, session: requests.Session = None) -> BeautifulSoup:
-        result = cls._get(url, session)
+    def _get_parsed_html(cls, url: str, session: requests.Session = None, headers: Optional[Dict[str, str]] = None) -> BeautifulSoup:
+        result = cls._get(url, session, headers=headers)
         return BeautifulSoup(result, 'html.parser')

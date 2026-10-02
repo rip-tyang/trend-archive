@@ -3,9 +3,31 @@ import traceback
 from datetime import date
 from typing import List, Union
 
-from apis import BilibiliApi, GithubAPI, YahooFinanceAPI, HuggingFaceAPI
+from apis import (
+    BilibiliApi,
+    GithubAPI,
+    YahooFinanceAPI,
+    HuggingFaceAPI,
+    HuggingFacePapersAPI,
+    CoinGeckoAPI,
+    CryptoFearGreedAPI,
+    WeiboAPI,
+    ZhihuAPI,
+    SteamAPI,
+)
 
-APIS = [BilibiliApi, GithubAPI, YahooFinanceAPI, HuggingFaceAPI]
+APIS = [
+    BilibiliApi,
+    GithubAPI,
+    YahooFinanceAPI,
+    HuggingFaceAPI,
+    HuggingFacePapersAPI,
+    CoinGeckoAPI,
+    CryptoFearGreedAPI,
+    WeiboAPI,
+    ZhihuAPI,
+    SteamAPI,
+]
 
 
 def save_raw_for_date(target_date: Union[date, str, None] = None, force: bool = False) -> List[str]:
