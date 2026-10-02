@@ -2,3 +2,4 @@ name: trend-archive
 dependencies:
   - python=3.9
   - requests
+  - beautifulsoup4
