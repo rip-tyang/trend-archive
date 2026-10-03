@@ -47,6 +47,9 @@ Each day, an automated pipeline queries APIs and platform frontends, generating:
 | **Weibo (微博)** | `WeiboAPI` | `archive/Weibo/<date>/` | Real-time Weibo Hot Search list (微博热搜榜), hotness rankings, search heat values, category badges, and direct search links. |
 | **Zhihu (知乎)** | `ZhihuAPI` | `archive/Zhihu/<date>/` | Zhihu Topstory Hot List (知乎热榜), question titles, hotness metrics, answer counts, follower counts, and topic excerpts. |
 | **Steam** | `SteamAPI` | `archive/Steam/<date>/` | Top Most Played games (current concurrent players, peak players today, prices) and Top Selling games globally (ranks, price, rank movement, weeks on chart). |
+| **Wikipedia (English)** | `WikipediaAPI` | `archive/Wikipedia/<date>/` | Daily top 100 most read Wikipedia articles globally, pageview counts, article titles, and direct Wikipedia links. |
+| **Google Trends** | `GoogleTrendsAPI` | `archive/GoogleTrends/<date>/` | Daily trending search queries (US), approximate search traffic volume, publication timestamps, and top related news headlines. |
+| **Baidu (百度热搜)** | `BaiduAPI` | `archive/Baidu/<date>/` | Real-time Baidu Hot Search board (百度热搜榜), heat indices, topic descriptions, and Baidu search links. |
 
 ---
 
@@ -56,6 +59,10 @@ All archives are organized hierarchically by destination name and date (`YYYY-MM
 
 ```text
 archive/
+├── Baidu/
+│   └── 2026-10-02/
+│       ├── hot_search.json
+│       └── README.md
 ├── Bilibili/
 │   └── 2026-10-02/
 │       ├── Raw/
@@ -76,6 +83,10 @@ archive/
 ├── Github/
 │   └── 2026-10-02/
 │       ├── trending.json
+│       └── README.md
+├── GoogleTrends/
+│   └── 2026-10-02/
+│       ├── daily_searches.json
 │       └── README.md
 ├── HuggingFace/
 │   └── 2026-10-02/
@@ -98,6 +109,10 @@ archive/
 ├── Weibo/
 │   └── 2026-10-02/
 │       ├── hot_search.json
+│       └── README.md
+├── Wikipedia/
+│   └── 2026-10-02/
+│       ├── top_pageviews.json
 │       └── README.md
 └── Zhihu/
     └── 2026-10-02/
@@ -200,6 +215,9 @@ from apis import (
     WeiboAPI,
     ZhihuAPI,
     SteamAPI,
+    WikipediaAPI,
+    GoogleTrendsAPI,
+    BaiduAPI,
 )
 ```
 

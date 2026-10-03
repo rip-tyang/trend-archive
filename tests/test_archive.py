@@ -16,6 +16,9 @@ from apis import (
     WeiboAPI,
     ZhihuAPI,
     SteamAPI,
+    WikipediaAPI,
+    GoogleTrendsAPI,
+    BaiduAPI,
 )
 import api as legacy_api
 import save_raw
@@ -32,6 +35,9 @@ ALL_APIS = [
     WeiboAPI,
     ZhihuAPI,
     SteamAPI,
+    WikipediaAPI,
+    GoogleTrendsAPI,
+    BaiduAPI,
 ]
 
 
@@ -192,6 +198,18 @@ class TestNewApisStructure(unittest.TestCase):
     def test_steam_structure(self):
         self.assertEqual(SteamAPI.LOC, "Steam")
         self.assertEqual(SteamAPI.EXPECTED_FILES, ["most_played.json", "top_sellers.json", "README.md"])
+
+    def test_wikipedia_structure(self):
+        self.assertEqual(WikipediaAPI.LOC, "Wikipedia")
+        self.assertEqual(WikipediaAPI.EXPECTED_FILES, ["top_pageviews.json", "README.md"])
+
+    def test_google_trends_structure(self):
+        self.assertEqual(GoogleTrendsAPI.LOC, "GoogleTrends")
+        self.assertEqual(GoogleTrendsAPI.EXPECTED_FILES, ["daily_searches.json", "README.md"])
+
+    def test_baidu_structure(self):
+        self.assertEqual(BaiduAPI.LOC, "Baidu")
+        self.assertEqual(BaiduAPI.EXPECTED_FILES, ["hot_search.json", "README.md"])
 
 
 if __name__ == "__main__":

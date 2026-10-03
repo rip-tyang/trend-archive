@@ -13,6 +13,9 @@ Direct imports should use the `apis` package:
         WeiboAPI,
         ZhihuAPI,
         SteamAPI,
+        WikipediaAPI,
+        GoogleTrendsAPI,
+        BaiduAPI,
     )
 """
 from apis import (
@@ -27,6 +30,9 @@ from apis import (
     WeiboAPI,
     ZhihuAPI,
     SteamAPI,
+    WikipediaAPI,
+    GoogleTrendsAPI,
+    BaiduAPI,
 )
 
 __all__ = [
@@ -41,6 +47,9 @@ __all__ = [
     'WeiboAPI',
     'ZhihuAPI',
     'SteamAPI',
+    'WikipediaAPI',
+    'GoogleTrendsAPI',
+    'BaiduAPI',
 ]
 
 
@@ -56,5 +65,8 @@ if __name__ == '__main__':
         WeiboAPI,
         ZhihuAPI,
         SteamAPI,
+        WikipediaAPI,
+        GoogleTrendsAPI,
+        BaiduAPI,
     ]:
         api_cls.archive_for_today()

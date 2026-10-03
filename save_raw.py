@@ -14,6 +14,9 @@ from apis import (
     WeiboAPI,
     ZhihuAPI,
     SteamAPI,
+    WikipediaAPI,
+    GoogleTrendsAPI,
+    BaiduAPI,
 )
 
 APIS = [
@@ -27,6 +30,9 @@ APIS = [
     WeiboAPI,
     ZhihuAPI,
     SteamAPI,
+    WikipediaAPI,
+    GoogleTrendsAPI,
+    BaiduAPI,
 ]
 
 

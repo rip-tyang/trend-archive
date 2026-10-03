@@ -9,6 +9,9 @@ from apis.crypto_fear_greed import CryptoFearGreedAPI
 from apis.weibo import WeiboAPI
 from apis.zhihu import ZhihuAPI
 from apis.steam import SteamAPI
+from apis.wikipedia import WikipediaAPI
+from apis.google_trends import GoogleTrendsAPI
+from apis.baidu import BaiduAPI
 
 __all__ = [
     'BaseApi',
@@ -22,4 +25,7 @@ __all__ = [
     'WeiboAPI',
     'ZhihuAPI',
     'SteamAPI',
+    'WikipediaAPI',
+    'GoogleTrendsAPI',
+    'BaiduAPI',
 ]
