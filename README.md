@@ -135,7 +135,7 @@ Each scraper inherits from `BaseApi`, which checks `has_data(target_date)` befor
 When running `save_raw.py`, every platform is executed inside an isolated exception boundary. If a single platform fails due to a rate limit or network hiccup, other sources continue to execute unimpeded. Any failed destinations are recorded and reported at the end, exiting with non-zero status code `1` so alerting or CI workflows are aware.
 
 ### Daily GitHub Actions Automation
-A scheduled workflow (`.github/workflows/schedule.yml`) runs daily at midnight UTC (`0 0 * * *`) and supports manual triggering via `workflow_dispatch`. It installs dependencies, runs `python save_raw.py`, and automatically commits and pushes updated archives.
+A scheduled workflow (`.github/workflows/schedule.yml`) runs daily at 12:03 AM New York time (`3 0 * * *` with `timezone: 'America/New_York'`) and supports manual triggering via `workflow_dispatch`. It installs dependencies, runs `python save_raw.py`, and automatically commits and pushes updated archives.
 
 ---
 

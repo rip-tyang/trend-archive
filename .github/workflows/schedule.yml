@@ -2,7 +2,8 @@ name: schedule
 
 on:
   schedule:
-    - cron: '0 0 * * *'
+    - cron: '3 0 * * *'
+      timezone: 'America/New_York'
   workflow_dispatch:
 
 jobs:
