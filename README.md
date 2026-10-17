@@ -50,6 +50,10 @@ Each day, an automated pipeline queries APIs and platform frontends, generating:
 | **Wikipedia (English)** | `WikipediaAPI` | `archive/Wikipedia/<date>/` | Daily top 100 most read Wikipedia articles globally, pageview counts, article titles, and direct Wikipedia links. |
 | **Google Trends** | `GoogleTrendsAPI` | `archive/GoogleTrends/<date>/` | Daily trending search queries (US), approximate search traffic volume, publication timestamps, and top related news headlines. |
 | **Baidu (百度热搜)** | `BaiduAPI` | `archive/Baidu/<date>/` | Real-time Baidu Hot Search board (百度热搜榜), heat indices, topic descriptions, and Baidu search links. |
+| **Polymarket** | `PolymarketAPI` | `archive/Polymarket/<date>/` | Top 50 open prediction-market events by 24h trading volume, total volume, liquidity, tags, and per-market outcomes with implied probabilities and daily/weekly price changes. |
+| **Apple Charts (US)** | `AppleChartsAPI` | `archive/AppleCharts/<date>/` | Top 100 free & paid iOS apps, most-played Apple Music songs & albums, top podcasts, and top free & paid books. |
+
+Some sources are intentionally not archived because the publisher already keeps a full downloadable history (e.g. Netflix Top 10). See [EXTERNAL.md](EXTERNAL.md).
 
 ---
 
@@ -218,6 +222,8 @@ from apis import (
     WikipediaAPI,
     GoogleTrendsAPI,
     BaiduAPI,
+    PolymarketAPI,
+    AppleChartsAPI,
 )
 ```
 

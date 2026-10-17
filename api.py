@@ -16,6 +16,8 @@ Direct imports should use the `apis` package:
         WikipediaAPI,
         GoogleTrendsAPI,
         BaiduAPI,
+        PolymarketAPI,
+        AppleChartsAPI,
     )
 """
 from apis import (
@@ -33,6 +35,8 @@ from apis import (
     WikipediaAPI,
     GoogleTrendsAPI,
     BaiduAPI,
+    PolymarketAPI,
+    AppleChartsAPI,
 )
 
 __all__ = [
@@ -50,6 +54,8 @@ __all__ = [
     'WikipediaAPI',
     'GoogleTrendsAPI',
     'BaiduAPI',
+    'PolymarketAPI',
+    'AppleChartsAPI',
 ]
 
 
@@ -68,5 +74,7 @@ if __name__ == '__main__':
         WikipediaAPI,
         GoogleTrendsAPI,
         BaiduAPI,
+        PolymarketAPI,
+        AppleChartsAPI,
     ]:
         api_cls.archive_for_today()

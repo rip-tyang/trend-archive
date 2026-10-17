@@ -17,6 +17,8 @@ from apis import (
     WikipediaAPI,
     GoogleTrendsAPI,
     BaiduAPI,
+    PolymarketAPI,
+    AppleChartsAPI,
 )
 
 APIS = [
@@ -33,6 +35,8 @@ APIS = [
     WikipediaAPI,
     GoogleTrendsAPI,
     BaiduAPI,
+    PolymarketAPI,
+    AppleChartsAPI,
 ]
 
 

@@ -12,6 +12,8 @@ from apis.steam import SteamAPI
 from apis.wikipedia import WikipediaAPI
 from apis.google_trends import GoogleTrendsAPI
 from apis.baidu import BaiduAPI
+from apis.polymarket import PolymarketAPI
+from apis.apple_charts import AppleChartsAPI
 
 __all__ = [
     'BaseApi',
@@ -28,4 +30,6 @@ __all__ = [
     'WikipediaAPI',
     'GoogleTrendsAPI',
     'BaiduAPI',
+    'PolymarketAPI',
+    'AppleChartsAPI',
 ]

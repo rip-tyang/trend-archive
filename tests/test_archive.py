@@ -19,6 +19,8 @@ from apis import (
     WikipediaAPI,
     GoogleTrendsAPI,
     BaiduAPI,
+    PolymarketAPI,
+    AppleChartsAPI,
 )
 import api as legacy_api
 import save_raw
@@ -38,6 +40,8 @@ ALL_APIS = [
     WikipediaAPI,
     GoogleTrendsAPI,
     BaiduAPI,
+    PolymarketAPI,
+    AppleChartsAPI,
 ]
 
 
@@ -210,6 +214,28 @@ class TestNewApisStructure(unittest.TestCase):
     def test_baidu_structure(self):
         self.assertEqual(BaiduAPI.LOC, "Baidu")
         self.assertEqual(BaiduAPI.EXPECTED_FILES, ["hot_search.json", "README.md"])
+
+    def test_polymarket_structure(self):
+        self.assertEqual(PolymarketAPI.LOC, "Polymarket")
+        self.assertEqual(PolymarketAPI.EXPECTED_FILES, ["top_events.json", "README.md"])
+
+    def test_apple_charts_structure(self):
+        self.assertEqual(AppleChartsAPI.LOC, "AppleCharts")
+        self.assertEqual(AppleChartsAPI.EXPECTED_FILES[-1], "README.md")
+        self.assertIn("top_free_apps.json", AppleChartsAPI.EXPECTED_FILES)
+        self.assertIn("top_songs.json", AppleChartsAPI.EXPECTED_FILES)
+
+    def test_polymarket_parse_event(self):
+        raw = {
+            "id": "1", "slug": "s", "title": "T", "volume24hr": 10, "volume": 20,
+            "tags": [{"label": "Politics"}],
+            "markets": [{"question": "Q", "outcomes": '["Yes", "No"]', "outcomePrices": '["0.7", "0.3"]'}],
+        }
+        e = PolymarketAPI._parse_event(raw)
+        self.assertEqual(e["tags"], ["Politics"])
+        self.assertEqual(e["markets"][0]["outcomes"], ["Yes", "No"])
+        self.assertEqual(e["markets"][0]["outcomePrices"], [0.7, 0.3])
+        self.assertEqual(PolymarketAPI._leading(e), "Yes (70%)")
 
 
 if __name__ == "__main__":
