@@ -43,6 +43,8 @@ ALL_APIS = [
     PolymarketAPI,
     AppleChartsAPI,
 ]
+# APIs that archive one snapshot per run date via _archive_for_date (Wikipedia backfills by data date instead)
+SNAPSHOT_APIS = [a for a in ALL_APIS if a is not WikipediaAPI]
 
 
 class TestBackwardCompatibility(unittest.TestCase):
@@ -114,13 +116,13 @@ class TestIdempotency(unittest.TestCase):
                 mock_archive.assert_not_called()
 
     def test_archive_for_date_fetches_when_forced(self):
-        for api_cls in ALL_APIS:
+        for api_cls in SNAPSHOT_APIS:
             with patch.object(api_cls, "_archive_for_date") as mock_archive:
                 api_cls.archive_for_date("2026-09-30", force=True)
                 mock_archive.assert_called_once()
 
     def test_archive_for_date_fetches_when_no_data(self):
-        for api_cls in ALL_APIS:
+        for api_cls in SNAPSHOT_APIS:
             with patch.object(api_cls, "has_data", return_value=False), patch.object(
                 api_cls, "_archive_for_date"
             ) as mock_archive:
@@ -206,6 +208,39 @@ class TestNewApisStructure(unittest.TestCase):
     def test_wikipedia_structure(self):
         self.assertEqual(WikipediaAPI.LOC, "Wikipedia")
         self.assertEqual(WikipediaAPI.EXPECTED_FILES, ["top_pageviews.json", "README.md"])
+
+    def test_wikipedia_backfills_by_data_date(self):
+        # Run on 10-18: 10-17 and 10-16 not published yet, 10-15 published, 10-14 already archived
+        published = {"2026/10/15"}
+        archived = {"2026-10-14"}
+
+        def fake_get_json(url, headers=None):
+            if url[-10:] in published:
+                return {"items": [{"articles": [{"article": "Main_Page", "views": 1, "rank": 1}]}]}
+            raise ValueError("Status code: 404\n Content: not found")
+
+        def fake_has_data(day):
+            return WikipediaAPI.format_date(day) in archived
+
+        with patch.object(WikipediaAPI, "_get_json", side_effect=fake_get_json), \
+             patch.object(WikipediaAPI, "has_data", side_effect=fake_has_data), \
+             patch("apis.wikipedia.write_raw_data") as mock_write, \
+             patch.object(WikipediaAPI, "_write_md_for_date"):
+            WikipediaAPI.archive_for_date("2026-10-18")
+        written = [os.path.basename(os.path.dirname(c.args[1])) for c in mock_write.call_args_list]
+        self.assertEqual(written, ["2026-10-15"])
+
+    def test_wikipedia_raises_when_window_empty(self):
+        with patch.object(WikipediaAPI, "_get_json", side_effect=ValueError("Status code: 404")), \
+             patch.object(WikipediaAPI, "has_data", return_value=False):
+            with self.assertRaises(ValueError):
+                WikipediaAPI.archive_for_date("2026-10-18")
+
+    def test_wikipedia_non_404_errors_propagate(self):
+        with patch.object(WikipediaAPI, "_get_json", side_effect=ValueError("Status code: 500")), \
+             patch.object(WikipediaAPI, "has_data", return_value=False):
+            with self.assertRaisesRegex(ValueError, "500"):
+                WikipediaAPI.archive_for_date("2026-10-18")
 
     def test_google_trends_structure(self):
         self.assertEqual(GoogleTrendsAPI.LOC, "GoogleTrends")
