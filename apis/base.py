@@ -5,6 +5,7 @@ from datetime import date, datetime
 import requests
 import json
 import sys
+import time
 
 BASE_REQUEST_HEADERS = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36',
@@ -27,6 +28,10 @@ class BaseApi(object):
     BASE_PATH = './archive'
     LOC = ''
     EXPECTED_FILES: List[str] = []
+    REQUEST_TIMEOUT = 30
+    MAX_ATTEMPTS = 3
+    RETRY_BACKOFF_SECONDS = 5
+    RETRY_STATUS_CODES = {429, 500, 502, 503, 504}
 
     @classmethod
     def format_date(cls, target_date: Union[date, datetime, str, None] = None) -> str:
@@ -72,11 +77,23 @@ class BaseApi(object):
         req_headers = dict(BASE_REQUEST_HEADERS)
         if headers:
             req_headers.update(headers)
-        res = session.get(url, headers=req_headers) if session else requests.get(url, headers=req_headers)
+        getter = session.get if session else requests.get
         print(f'getting {url}')
-        if res.status_code != 200:
-            raise ValueError(f'Status code: {res.status_code}\n Content: {res.text}')
-        return res.text
+        # Retry transient failures (timeouts, rate limits, 5xx gateway errors) with linear backoff
+        for attempt in range(1, cls.MAX_ATTEMPTS + 1):
+            try:
+                res = getter(url, headers=req_headers, timeout=cls.REQUEST_TIMEOUT)
+            except (requests.exceptions.ConnectionError, requests.exceptions.Timeout) as e:
+                if attempt == cls.MAX_ATTEMPTS:
+                    raise
+                print(f'  attempt {attempt} failed ({type(e).__name__}), retrying', file=sys.stderr)
+            else:
+                if res.status_code == 200:
+                    return res.text
+                if res.status_code not in cls.RETRY_STATUS_CODES or attempt == cls.MAX_ATTEMPTS:
+                    raise ValueError(f'Status code: {res.status_code}\n Content: {res.text}')
+                print(f'  attempt {attempt} got status {res.status_code}, retrying', file=sys.stderr)
+            time.sleep(cls.RETRY_BACKOFF_SECONDS * attempt)
 
     @classmethod
     def _get_json(cls, url: str, session: requests.Session = None, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:

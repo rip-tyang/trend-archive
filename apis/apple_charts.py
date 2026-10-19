@@ -1,5 +1,6 @@
 from typing import Dict, List, Any
 from os import path
+import sys
 
 from apis.base import BaseApi
 from writer import write_raw_data, write_md
@@ -61,7 +62,17 @@ class AppleChartsAPI(BaseApi):
 
     @classmethod
     def _archive_for_date(cls, loc: str) -> None:
-        charts = {name: cls.get_feed(feed) for name, (_, feed) in cls.FEEDS.items()}
-        for name, items in charts.items():
-            write_raw_data(items, path.join(loc, f'{name}.json'))
+        # Save every feed that succeeds; README.md is only written once all feeds are in,
+        # so a partial day is not marked complete and a rerun refetches it.
+        charts, failed = {}, []
+        for name, (_, feed) in cls.FEEDS.items():
+            try:
+                charts[name] = cls.get_feed(feed)
+            except Exception as e:
+                print(f'[{cls.LOC}] Failed to fetch {name}: {e}', file=sys.stderr)
+                failed.append(name)
+                continue
+            write_raw_data(charts[name], path.join(loc, f'{name}.json'))
+        if failed:
+            raise ValueError(f'Failed to fetch Apple feed(s): {", ".join(failed)}')
         cls._write_md_for_date(loc, charts)

@@ -273,5 +273,62 @@ class TestNewApisStructure(unittest.TestCase):
         self.assertEqual(PolymarketAPI._leading(e), "Yes (70%)")
 
 
+
+class TestRequestRetries(unittest.TestCase):
+    @staticmethod
+    def _response(status, text=""):
+        res = MagicMock()
+        res.status_code = status
+        res.text = text
+        return res
+
+    def test_retries_transient_status_then_succeeds(self):
+        responses = [self._response(504), self._response(200, "ok")]
+        with patch("apis.base.requests.get", side_effect=responses) as mock_get, \
+             patch("apis.base.time.sleep") as mock_sleep:
+            self.assertEqual(BaseApi._get("https://example.com"), "ok")
+        self.assertEqual(mock_get.call_count, 2)
+        mock_sleep.assert_called_once()
+
+    def test_retries_timeout_then_succeeds(self):
+        import requests
+        side_effect = [requests.exceptions.Timeout(), self._response(200, "ok")]
+        with patch("apis.base.requests.get", side_effect=side_effect), patch("apis.base.time.sleep"):
+            self.assertEqual(BaseApi._get("https://example.com"), "ok")
+
+    def test_gives_up_after_max_attempts(self):
+        with patch("apis.base.requests.get", return_value=self._response(504)) as mock_get, \
+             patch("apis.base.time.sleep"):
+            with self.assertRaisesRegex(ValueError, "Status code: 504"):
+                BaseApi._get("https://example.com")
+        self.assertEqual(mock_get.call_count, BaseApi.MAX_ATTEMPTS)
+
+    def test_does_not_retry_client_errors(self):
+        with patch("apis.base.requests.get", return_value=self._response(404)) as mock_get, \
+             patch("apis.base.time.sleep") as mock_sleep:
+            with self.assertRaisesRegex(ValueError, "Status code: 404"):
+                BaseApi._get("https://example.com")
+        self.assertEqual(mock_get.call_count, 1)
+        mock_sleep.assert_not_called()
+
+
+class TestAppleChartsPartialFailure(unittest.TestCase):
+    def test_saves_successful_feeds_and_reports_failures(self):
+        def fake_get_feed(feed):
+            if "top-paid" in feed and "apps" in feed:
+                raise ValueError("Status code: 504")
+            return [{"rank": 1}]
+
+        with patch.object(AppleChartsAPI, "get_feed", side_effect=fake_get_feed), \
+             patch("apis.apple_charts.write_raw_data") as mock_write, \
+             patch.object(AppleChartsAPI, "_write_md_for_date") as mock_md:
+            with self.assertRaisesRegex(ValueError, "top_paid_apps"):
+                AppleChartsAPI._archive_for_date("archive/AppleCharts/2099-01-01")
+        written = sorted(os.path.basename(c.args[1]) for c in mock_write.call_args_list)
+        self.assertEqual(len(written), len(AppleChartsAPI.FEEDS) - 1)
+        self.assertNotIn("top_paid_apps.json", written)
+        mock_md.assert_not_called()
+
+
 if __name__ == "__main__":
     unittest.main()
