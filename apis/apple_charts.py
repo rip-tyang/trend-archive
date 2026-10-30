@@ -1,8 +1,10 @@
 from typing import Dict, List, Any
 from os import path
 import sys
+import time
 
 from apis.base import BaseApi
+from reader import read_json
 from writer import write_raw_data, write_md
 
 
@@ -11,6 +13,7 @@ class AppleChartsAPI(BaseApi):
     BASE_URL = 'https://rss.applemarketingtools.com/api/v2/{country}/{feed}.json'
     COUNTRY = 'us'
     LIMIT = 100
+    FEED_DELAY_SECONDS = 2
     RAW_DATA_T = List[Dict[str, Any]]
     # file name -> (section title, feed path without limit)
     FEEDS = {
@@ -63,16 +66,24 @@ class AppleChartsAPI(BaseApi):
     @classmethod
     def _archive_for_date(cls, loc: str) -> None:
         # Save every feed that succeeds; README.md is only written once all feeds are in,
-        # so a partial day is not marked complete and a rerun refetches it.
+        # so a partial day is not marked complete. A rerun of a partial day reuses the
+        # feeds already saved and only fetches the missing ones.
+        is_partial_day = not path.exists(path.join(loc, 'README.md'))
         charts, failed = {}, []
         for name, (_, feed) in cls.FEEDS.items():
+            feed_path = path.join(loc, f'{name}.json')
+            if is_partial_day and path.exists(feed_path):
+                charts[name] = read_json(feed_path)
+                continue
+            if charts or failed:
+                time.sleep(cls.FEED_DELAY_SECONDS)  # space out requests to avoid Apple's rate limit
             try:
                 charts[name] = cls.get_feed(feed)
             except Exception as e:
                 print(f'[{cls.LOC}] Failed to fetch {name}: {e}', file=sys.stderr)
                 failed.append(name)
                 continue
-            write_raw_data(charts[name], path.join(loc, f'{name}.json'))
+            write_raw_data(charts[name], feed_path)
         if failed:
             raise ValueError(f'Failed to fetch Apple feed(s): {", ".join(failed)}')
         cls._write_md_for_date(loc, charts)

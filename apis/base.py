@@ -31,6 +31,7 @@ class BaseApi(object):
     REQUEST_TIMEOUT = 30
     MAX_ATTEMPTS = 3
     RETRY_BACKOFF_SECONDS = 5
+    MAX_RETRY_AFTER_SECONDS = 60
     RETRY_STATUS_CODES = {429, 500, 502, 503, 504}
 
     @classmethod
@@ -93,7 +94,20 @@ class BaseApi(object):
                 if res.status_code not in cls.RETRY_STATUS_CODES or attempt == cls.MAX_ATTEMPTS:
                     raise ValueError(f'Status code: {res.status_code}\n Content: {res.text}')
                 print(f'  attempt {attempt} got status {res.status_code}, retrying', file=sys.stderr)
+                retry_after = cls._retry_after_seconds(res)
+                if retry_after is not None:
+                    time.sleep(retry_after)
+                    continue
             time.sleep(cls.RETRY_BACKOFF_SECONDS * attempt)
+
+    @classmethod
+    def _retry_after_seconds(cls, res: requests.Response) -> Optional[float]:
+        # Honor the server's Retry-After (seconds form) on rate limits, capped so one source can't stall the run
+        value = res.headers.get('Retry-After') if res.status_code == 429 else None
+        try:
+            return min(float(value), cls.MAX_RETRY_AFTER_SECONDS) if value is not None else None
+        except (TypeError, ValueError):
+            return None
 
     @classmethod
     def _get_json(cls, url: str, session: requests.Session = None, headers: Optional[Dict[str, str]] = None) -> Dict[str, Any]:

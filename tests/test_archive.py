@@ -280,6 +280,7 @@ class TestRequestRetries(unittest.TestCase):
         res = MagicMock()
         res.status_code = status
         res.text = text
+        res.headers = {}
         return res
 
     def test_retries_transient_status_then_succeeds(self):
@@ -303,6 +304,30 @@ class TestRequestRetries(unittest.TestCase):
                 BaseApi._get("https://example.com")
         self.assertEqual(mock_get.call_count, BaseApi.MAX_ATTEMPTS)
 
+    def test_rate_limit_honors_retry_after(self):
+        limited = self._response(429)
+        limited.headers = {"Retry-After": "12"}
+        with patch("apis.base.requests.get", side_effect=[limited, self._response(200, "ok")]), \
+             patch("apis.base.time.sleep") as mock_sleep:
+            self.assertEqual(BaseApi._get("https://example.com"), "ok")
+        mock_sleep.assert_called_once_with(12.0)
+
+    def test_retry_after_is_capped(self):
+        limited = self._response(429)
+        limited.headers = {"Retry-After": "3600"}
+        with patch("apis.base.requests.get", side_effect=[limited, self._response(200, "ok")]), \
+             patch("apis.base.time.sleep") as mock_sleep:
+            BaseApi._get("https://example.com")
+        mock_sleep.assert_called_once_with(BaseApi.MAX_RETRY_AFTER_SECONDS)
+
+    def test_rate_limit_without_retry_after_uses_backoff(self):
+        limited = self._response(429)
+        limited.headers = {}
+        with patch("apis.base.requests.get", side_effect=[limited, self._response(200, "ok")]), \
+             patch("apis.base.time.sleep") as mock_sleep:
+            BaseApi._get("https://example.com")
+        mock_sleep.assert_called_once_with(BaseApi.RETRY_BACKOFF_SECONDS)
+
     def test_does_not_retry_client_errors(self):
         with patch("apis.base.requests.get", return_value=self._response(404)) as mock_get, \
              patch("apis.base.time.sleep") as mock_sleep:
@@ -321,6 +346,7 @@ class TestAppleChartsPartialFailure(unittest.TestCase):
 
         with patch.object(AppleChartsAPI, "get_feed", side_effect=fake_get_feed), \
              patch("apis.apple_charts.write_raw_data") as mock_write, \
+             patch("apis.apple_charts.time.sleep"), \
              patch.object(AppleChartsAPI, "_write_md_for_date") as mock_md:
             with self.assertRaisesRegex(ValueError, "top_paid_apps"):
                 AppleChartsAPI._archive_for_date("archive/AppleCharts/2099-01-01")
@@ -328,6 +354,30 @@ class TestAppleChartsPartialFailure(unittest.TestCase):
         self.assertEqual(len(written), len(AppleChartsAPI.FEEDS) - 1)
         self.assertNotIn("top_paid_apps.json", written)
         mock_md.assert_not_called()
+
+    def test_rerun_of_partial_day_fetches_only_missing_feeds(self):
+        loc = "archive/AppleCharts/2099-01-01"
+        saved = {os.path.join(loc, f"{name}.json") for name in AppleChartsAPI.FEEDS if name != "top_songs"}
+
+        with patch("apis.apple_charts.path.exists", side_effect=lambda p: p in saved), \
+             patch("apis.apple_charts.read_json", return_value=[{"rank": 1}]), \
+             patch.object(AppleChartsAPI, "get_feed", return_value=[{"rank": 1}]) as mock_get_feed, \
+             patch("apis.apple_charts.write_raw_data") as mock_write, \
+             patch("apis.apple_charts.time.sleep"), \
+             patch.object(AppleChartsAPI, "_write_md_for_date") as mock_md:
+            AppleChartsAPI._archive_for_date(loc)
+        mock_get_feed.assert_called_once_with(AppleChartsAPI.FEEDS["top_songs"][1])
+        self.assertEqual(mock_write.call_args_list[0].args[1], os.path.join(loc, "top_songs.json"))
+        mock_md.assert_called_once()
+
+    def test_complete_day_refetches_all_feeds_when_forced(self):
+        with patch("apis.apple_charts.path.exists", return_value=True), \
+             patch.object(AppleChartsAPI, "get_feed", return_value=[{"rank": 1}]) as mock_get_feed, \
+             patch("apis.apple_charts.write_raw_data"), \
+             patch("apis.apple_charts.time.sleep"), \
+             patch.object(AppleChartsAPI, "_write_md_for_date"):
+            AppleChartsAPI._archive_for_date("archive/AppleCharts/2099-01-01")
+        self.assertEqual(mock_get_feed.call_count, len(AppleChartsAPI.FEEDS))
 
 
 if __name__ == "__main__":
