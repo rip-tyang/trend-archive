@@ -150,9 +150,48 @@ class TestErrorIsolation(unittest.TestCase):
             p.start()
 
         try:
-            failed = save_raw.save_raw_for_date("2099-01-01")
-            self.assertEqual(len(executed), len(save_raw.APIS))
+            with patch("save_raw.time.sleep") as mock_sleep:
+                failed = save_raw.save_raw_for_date("2099-01-01")
+            # every destination runs once, then the failed one is retried once after a pause
+            self.assertEqual(len(executed), len(save_raw.APIS) + 1)
+            self.assertEqual(executed[-1], "Github")
+            mock_sleep.assert_called_once_with(save_raw.RETRY_PASS_DELAY_SECONDS)
             self.assertEqual(failed, ["Github"])
+        finally:
+            for p in patches:
+                p.stop()
+
+    def test_failed_destination_recovers_on_retry_pass(self):
+        attempts = []
+
+        def flaky(target_date=None, force=False):
+            attempts.append(1)
+            if len(attempts) == 1:
+                raise RuntimeError("504")
+
+        patches = [patch.object(api_cls, "archive_for_date") for api_cls in save_raw.APIS
+                   if api_cls is not save_raw.APIS[0]]
+        patches.append(patch.object(save_raw.APIS[0], "archive_for_date", side_effect=flaky))
+        for p in patches:
+            p.start()
+        try:
+            with patch("save_raw.time.sleep"):
+                failed = save_raw.save_raw_for_date("2099-01-01")
+            self.assertEqual(failed, [])
+            self.assertEqual(len(attempts), 2)
+        finally:
+            for p in patches:
+                p.stop()
+
+    def test_all_succeed_without_retry_pass(self):
+        patches = [patch.object(api_cls, "archive_for_date") for api_cls in save_raw.APIS]
+        for p in patches:
+            p.start()
+        try:
+            with patch("save_raw.time.sleep") as mock_sleep:
+                failed = save_raw.save_raw_for_date("2099-01-01")
+            self.assertEqual(failed, [])
+            mock_sleep.assert_not_called()
         finally:
             for p in patches:
                 p.stop()

@@ -1,4 +1,5 @@
 import sys
+import time
 import traceback
 from datetime import date
 from typing import List, Union
@@ -40,9 +41,13 @@ APIS = [
 ]
 
 
-def save_raw_for_date(target_date: Union[date, str, None] = None, force: bool = False) -> List[str]:
+# Seconds to wait before retrying failed destinations once, so short upstream outages can clear
+RETRY_PASS_DELAY_SECONDS = 120
+
+
+def _archive_all(apis: List[type], target_date: Union[date, str, None], force: bool) -> List[type]:
     failed = []
-    for api in APIS:
+    for api in apis:
         dest_name = getattr(api, 'LOC', api.__name__)
         try:
             print(f"=== Archiving destination: {dest_name} ===")
@@ -51,8 +56,18 @@ def save_raw_for_date(target_date: Union[date, str, None] = None, force: bool = 
         except Exception as e:
             print(f"Error archiving destination {dest_name}: {e}", file=sys.stderr)
             traceback.print_exc()
-            failed.append(dest_name)
+            failed.append(api)
     return failed
+
+
+def save_raw_for_date(target_date: Union[date, str, None] = None, force: bool = False) -> List[str]:
+    failed = _archive_all(APIS, target_date, force)
+    if failed:
+        names = ', '.join(getattr(api, 'LOC', api.__name__) for api in failed)
+        print(f"Retrying failed destination(s) in {RETRY_PASS_DELAY_SECONDS}s: {names}\n")
+        time.sleep(RETRY_PASS_DELAY_SECONDS)
+        failed = _archive_all(failed, target_date, force)
+    return [getattr(api, 'LOC', api.__name__) for api in failed]
 
 
 def save_raw_today(force: bool = False) -> List[str]:

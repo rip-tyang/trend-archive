@@ -136,7 +136,7 @@ Each date directory includes:
 Each scraper inherits from `BaseApi`, which checks `has_data(target_date)` before making network requests. If the expected files already exist in `archive/<Source>/<YYYY-MM-DD>/`, the fetch step is automatically skipped. Pass `force=True` to re-fetch and overwrite existing data.
 
 ### Fault-Tolerant Error Isolation
-When running `save_raw.py`, every platform is executed inside an isolated exception boundary. If a single platform fails due to a rate limit or network hiccup, other sources continue to execute unimpeded. Any failed destinations are recorded and reported at the end, exiting with non-zero status code `1` so alerting or CI workflows are aware.
+When running `save_raw.py`, every platform is executed inside an isolated exception boundary. If a single platform fails due to a rate limit or network hiccup, other sources continue to execute unimpeded. Individual HTTP requests are retried on timeouts, rate limits (honoring `Retry-After`) and 5xx errors, and any destination that still fails is retried once more after a 2-minute pause at the end of the run. Destinations that fail both passes are reported, exiting with non-zero status code `1` so alerting or CI workflows are aware.
 
 ### Daily GitHub Actions Automation
 A scheduled workflow (`.github/workflows/schedule.yml`) runs daily at 12:03 AM New York time (`3 0 * * *` with `timezone: 'America/New_York'`) and supports manual triggering via `workflow_dispatch`. It installs dependencies, runs `python save_raw.py`, and automatically commits and pushes updated archives.
