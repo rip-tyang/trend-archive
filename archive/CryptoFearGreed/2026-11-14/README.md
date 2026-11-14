@@ -1,0 +1,38 @@
+# Crypto Fear & Greed Index
+
+> **Current Sentiment**: **Extreme Fear** (Score: **13** / 100)
+
+## Historical Trend (Last 30 Days)
+
+| Date | Score (0-100) | Classification |
+| --- | --- | --- |
+| 2026-11-13 | 13 | Extreme Fear |
+| 2026-11-12 | 20 | Extreme Fear |
+| 2026-11-11 | 28 | Fear |
+| 2026-11-10 | 29 | Fear |
+| 2026-11-09 | 32 | Fear |
+| 2026-11-08 | 29 | Fear |
+| 2026-11-07 | 28 | Fear |
+| 2026-11-06 | 25 | Extreme Fear |
+| 2026-11-05 | 28 | Fear |
+| 2026-11-04 | 50 | Neutral |
+| 2026-11-03 | 34 | Fear |
+| 2026-11-02 | 26 | Fear |
+| 2026-11-01 | 37 | Fear |
+| 2026-10-31 | 34 | Fear |
+| 2026-10-30 | 30 | Fear |
+| 2026-10-29 | 30 | Fear |
+| 2026-10-28 | 51 | Neutral |
+| 2026-10-27 | 51 | Neutral |
+| 2026-10-26 | 48 | Neutral |
+| 2026-10-25 | 50 | Neutral |
+| 2026-10-24 | 54 | Neutral |
+| 2026-10-23 | 51 | Neutral |
+| 2026-10-22 | 50 | Neutral |
+| 2026-10-21 | 68 | Greed |
+| 2026-10-20 | 63 | Greed |
+| 2026-10-19 | 55 | Greed |
+| 2026-10-18 | 59 | Greed |
+| 2026-10-17 | 53 | Neutral |
+| 2026-10-16 | 55 | Greed |
+| 2026-10-15 | 63 | Greed |
